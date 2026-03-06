@@ -24,60 +24,30 @@ st.set_page_config(
 st.markdown("""
 <style>
 :root {
-    --lb-primary:         #1a5276;
-    --lb-primary-light:   #2e86c1;
-    --lb-success:         #1e8449;
-    --lb-bg-card:         #f8f9fa;
-    --lb-border:          #dee2e6;
-    --lb-border-left:     #1a5276;
-    --lb-text:            #212529;
-    --lb-text-muted:      #6c757d;
-    --lb-pill-pending-bg: #f0f0f0;
-    --lb-pill-pending-fg: #888888;
-    --lb-header-grad1:    #0f2942;
-    --lb-header-grad2:    #1a5276;
-    --lb-step-pending-bg: #ecf0f1;
-    --lb-step-pending-fg: #95a5a6;
-    --lb-caption-bg:      #fff8e1;
-    --lb-caption-border:  #f0c040;
-    --lb-caption-fg:      #5d4037;
-    --lb-strategy-bg:     #eaf4fb;
-    --lb-strategy-border: #2e86c1;
-    --lb-strategy-fg:     #1a5276;
-    --lb-strategy-bg2:    #eafaf1;
-    --lb-strategy-border2:#27ae60;
-    --lb-strategy-fg2:    #1e8449;
-    --lb-cache-bg:        #f0fff4;
-    --lb-cache-border:    #27ae60;
-    --lb-cache-fg:        #1e8449;
+    --lb-primary:#1a5276; --lb-primary-light:#2e86c1; --lb-success:#1e8449;
+    --lb-bg-card:#f8f9fa; --lb-border:#dee2e6; --lb-border-left:#1a5276;
+    --lb-text:#212529; --lb-text-muted:#6c757d;
+    --lb-pill-pending-bg:#f0f0f0; --lb-pill-pending-fg:#888888;
+    --lb-header-grad1:#0f2942; --lb-header-grad2:#1a5276;
+    --lb-step-pending-bg:#ecf0f1; --lb-step-pending-fg:#95a5a6;
+    --lb-caption-bg:#fff8e1; --lb-caption-border:#f0c040; --lb-caption-fg:#5d4037;
+    --lb-strategy-bg:#eaf4fb; --lb-strategy-border:#2e86c1; --lb-strategy-fg:#1a5276;
+    --lb-strategy-bg2:#eafaf1; --lb-strategy-border2:#27ae60; --lb-strategy-fg2:#1e8449;
+    --lb-cache-bg:#f0fff4; --lb-cache-border:#27ae60; --lb-cache-fg:#1e8449;
+    --lb-filter-bg:#fdf2f8; --lb-filter-border:#8e44ad; --lb-filter-fg:#6c3483;
 }
 [data-theme="dark"], .stApp[data-theme="dark"] {
-    --lb-primary:         #2e86c1;
-    --lb-primary-light:   #5dade2;
-    --lb-success:         #27ae60;
-    --lb-bg-card:         #1e2530;
-    --lb-border:          #2e3b4e;
-    --lb-border-left:     #2e86c1;
-    --lb-text:            #e8edf2;
-    --lb-text-muted:      #8fa3b1;
-    --lb-pill-pending-bg: #2a3441;
-    --lb-pill-pending-fg: #7f8c99;
-    --lb-header-grad1:    #0a1929;
-    --lb-header-grad2:    #0d3556;
-    --lb-step-pending-bg: #2a3441;
-    --lb-step-pending-fg: #7f8c99;
-    --lb-caption-bg:      #2a2000;
-    --lb-caption-border:  #7d6608;
-    --lb-caption-fg:      #f5cba7;
-    --lb-strategy-bg:     #0d2137;
-    --lb-strategy-border: #2e86c1;
-    --lb-strategy-fg:     #5dade2;
-    --lb-strategy-bg2:    #0d2318;
-    --lb-strategy-border2:#27ae60;
-    --lb-strategy-fg2:    #58d68d;
-    --lb-cache-bg:        #0d2318;
-    --lb-cache-border:    #27ae60;
-    --lb-cache-fg:        #58d68d;
+    --lb-primary:#2e86c1; --lb-primary-light:#5dade2; --lb-success:#27ae60;
+    --lb-bg-card:#1e2530; --lb-border:#2e3b4e; --lb-border-left:#2e86c1;
+    --lb-text:#e8edf2; --lb-text-muted:#8fa3b1;
+    --lb-pill-pending-bg:#2a3441; --lb-pill-pending-fg:#7f8c99;
+    --lb-header-grad1:#0a1929; --lb-header-grad2:#0d3556;
+    --lb-step-pending-bg:#2a3441; --lb-step-pending-fg:#7f8c99;
+    --lb-caption-bg:#2a2000; --lb-caption-border:#7d6608; --lb-caption-fg:#f5cba7;
+    --lb-strategy-bg:#0d2137; --lb-strategy-border:#2e86c1; --lb-strategy-fg:#5dade2;
+    --lb-strategy-bg2:#0d2318; --lb-strategy-border2:#27ae60; --lb-strategy-fg2:#58d68d;
+    --lb-cache-bg:#0d2318; --lb-cache-border:#27ae60; --lb-cache-fg:#58d68d;
+    --lb-filter-bg:#1e0d2a; --lb-filter-border:#8e44ad; --lb-filter-fg:#c39bd3;
 }
 @media (prefers-color-scheme: dark) {
     :root {
@@ -91,10 +61,11 @@ st.markdown("""
         --lb-strategy-bg:#0d2137; --lb-strategy-border:#2e86c1; --lb-strategy-fg:#5dade2;
         --lb-strategy-bg2:#0d2318; --lb-strategy-border2:#27ae60; --lb-strategy-fg2:#58d68d;
         --lb-cache-bg:#0d2318; --lb-cache-border:#27ae60; --lb-cache-fg:#58d68d;
+        --lb-filter-bg:#1e0d2a; --lb-filter-border:#8e44ad; --lb-filter-fg:#c39bd3;
     }
 }
 .lb-header {
-    background: linear-gradient(135deg, var(--lb-header-grad1) 0%, var(--lb-header-grad2) 100%);
+    background:linear-gradient(135deg,var(--lb-header-grad1) 0%,var(--lb-header-grad2) 100%);
     padding:2rem 2.5rem; border-radius:14px; color:#fff; margin-bottom:1.8rem;
     border:1px solid rgba(255,255,255,0.08); box-shadow:0 4px 20px rgba(0,0,0,0.25);
 }
@@ -112,8 +83,7 @@ st.markdown("""
                     padding:0.5rem 0.2rem; border-radius:8px; text-align:center; font-size:0.8rem;
                     box-shadow:0 0 10px rgba(46,134,193,0.5); border:2px solid var(--lb-primary-light); }
 .step-bar-pending { background:var(--lb-step-pending-bg); color:var(--lb-step-pending-fg);
-                    font-weight:400; padding:0.5rem 0.2rem; border-radius:8px;
-                    text-align:center; font-size:0.8rem; }
+                    font-weight:400; padding:0.5rem 0.2rem; border-radius:8px; text-align:center; font-size:0.8rem; }
 .info-card { background:var(--lb-bg-card); border:1px solid var(--lb-border);
              border-left:5px solid var(--lb-border-left); border-radius:8px;
              padding:1rem 1.2rem; margin-bottom:1rem; color:var(--lb-text); line-height:1.6; }
@@ -134,6 +104,15 @@ st.markdown("""
 .cache-badge { background:var(--lb-cache-bg); border:1px solid var(--lb-cache-border);
                border-radius:6px; padding:0.4rem 0.8rem; color:var(--lb-cache-fg);
                font-size:0.8rem; display:inline-block; margin:0.2rem 0; }
+.filter-card { background:var(--lb-filter-bg); border:2px solid var(--lb-filter-border);
+               border-radius:10px; padding:1.1rem 1.4rem; color:var(--lb-filter-fg);
+               margin-bottom:1rem; line-height:1.7; }
+.filter-card b    { color:var(--lb-filter-border); }
+.filter-card code { background:rgba(142,68,173,0.15); color:var(--lb-filter-border);
+                    padding:0.1rem 0.3rem; border-radius:4px; font-size:0.83rem; }
+.filter-summary { background:var(--lb-bg-card); border:1px solid var(--lb-border);
+                  border-radius:8px; padding:0.7rem 1rem; margin:0.5rem 0;
+                  font-size:0.85rem; color:var(--lb-text); }
 div[data-testid="stDataFrame"] { border-radius:8px; }
 .stDownloadButton > button { width:100%; }
 div[data-testid="stProgressBar"] > div > div { background-color:var(--lb-primary-light) !important; }
@@ -150,15 +129,15 @@ DEFAULTS = {
     "matches_df":     None,
     "enriched_df":    None,
     "tfidf_strategy": "Page-Level",
-    # ── Ahrefs caches (persist across reruns in same session) ──────────────
-    "ahrefs_domain_cache": {},   # {domain: {"dr": v, "dt": v}}
-    "ahrefs_page_cache":   {},   # {page_url: traffic_int}
+    "ahrefs_domain_cache": {},
+    "ahrefs_page_cache":   {},
     "cfg": {
-        "max_depth": 2,
-        "max_pages": 50,
-        "workers":   10,
-        "threshold": 0.3,
-        "exclude":   ["/tag/", "/category/", "/author/", "/page/", "/wp-json/"],
+        "max_depth":    2,
+        "max_pages":    50,
+        "workers":      10,
+        "sim_min":      0.10,
+        "sim_max":      0.90,
+        "exclude": ["/tag/", "/category/", "/author/", "/page/", "/wp-json/"],
     }
 }
 for k, v in DEFAULTS.items():
@@ -167,7 +146,7 @@ for k, v in DEFAULTS.items():
 
 cfg = st.session_state.cfg
 
-# ─── HELPERS ──────────────────────────────────────────────────────────────────
+# ─── CORE HELPERS ─────────────────────────────────────────────────────────────
 def to_base_url(domain: str) -> str:
     d = domain.strip()
     if not d.startswith(("http://", "https://")):
@@ -199,7 +178,7 @@ def safe_get(url: str, timeout: int = 10) -> tuple:
     except Exception:
         return 0, ""
 
-# ─── SITEMAP ──────────────────────────────────────────────────────────────────
+# ─── SITEMAP & CRAWL ──────────────────────────────────────────────────────────
 def parse_sitemap_xml(content: str, visited: set, max_pages: int) -> list:
     urls = []
     try:
@@ -279,8 +258,7 @@ def _ahrefs_get(endpoint: str, params: dict, token: str):
         r = requests.get(
             f"{AHREFS_BASE}/{endpoint}",
             headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
-            params=params,
-            timeout=15,
+            params=params, timeout=15,
         )
         if r.status_code == 200:
             return r.json()
@@ -290,55 +268,37 @@ def _ahrefs_get(endpoint: str, params: dict, token: str):
     return None
 
 def get_domain_rating(domain: str, token: str):
-    d = _ahrefs_get("domain-rating", {
-        "target": domain, "date": TODAY,
-        "mode": "subdomains", "protocol": "both",
-    }, token)
+    d = _ahrefs_get("domain-rating",
+        {"target": domain, "date": TODAY, "mode": "subdomains", "protocol": "both"}, token)
     return d.get("domain_rating", {}).get("domain_rating") if d else None
 
 def get_domain_traffic(domain: str, token: str):
-    d = _ahrefs_get("metrics", {
-        "target": domain, "date": TODAY,
-        "mode": "subdomains", "protocol": "both",
-    }, token)
+    d = _ahrefs_get("metrics",
+        {"target": domain, "date": TODAY, "mode": "subdomains", "protocol": "both"}, token)
     return d.get("metrics", {}).get("org_traffic") if d else None
 
 def _normalise_url(url: str) -> str:
-    """Ensure scheme present; strip trailing slash on non-root paths."""
     u = url.strip()
     if not u.startswith(("http://", "https://")):
         u = "https://" + u
     parsed = urlparse(u)
-    # Only strip trailing slash when there is a real path beyond root
     if parsed.path not in ("", "/"):
         u = u.rstrip("/")
     return u
 
 def get_page_traffic(page_url: str, token: str) -> int:
-    """
-    Fetch page-level organic traffic with two-pass strategy:
-      Pass 1 — exact mode  (specific URL match)
-      Pass 2 — prefix mode (catches trailing-slash / query-param variants)
-    Returns best non-zero result, or 0 if both passes return nothing.
-    """
     url = _normalise_url(page_url)
-
     # Pass 1: exact
-    d1 = _ahrefs_get("metrics", {
-        "target": url, "date": TODAY,
-        "mode": "exact", "protocol": "both",
-    }, token)
+    d1 = _ahrefs_get("metrics",
+        {"target": url, "date": TODAY, "mode": "exact", "protocol": "both"}, token)
     t1 = (d1.get("metrics", {}).get("org_traffic") or 0) if d1 else 0
     if t1 > 0:
         return t1
-
     # Pass 2: prefix fallback
-    d2 = _ahrefs_get("metrics", {
-        "target": url, "date": TODAY,
-        "mode": "prefix", "protocol": "both",
-    }, token)
+    d2 = _ahrefs_get("metrics",
+        {"target": url, "date": TODAY, "mode": "prefix", "protocol": "both"}, token)
     t2 = (d2.get("metrics", {}).get("org_traffic") or 0) if d2 else 0
-    return t2  # returns 0 if both failed — explicit, not None
+    return t2
 
 # ─── RENDER HELPERS ───────────────────────────────────────────────────────────
 def render_step_bar():
@@ -359,10 +319,17 @@ def score_caption(text: str):
 def cache_badge(text: str):
     st.markdown(f'''<div class="cache-badge">{text}</div>''', unsafe_allow_html=True)
 
+def filter_card(text: str):
+    st.markdown(f'''<div class="filter-card">{text}</div>''', unsafe_allow_html=True)
+
+def filter_summary(text: str):
+    st.markdown(f'''<div class="filter-summary">{text}</div>''', unsafe_allow_html=True)
+
 # ─── SIDEBAR ──────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("## 🔗 LinkBuilder Pro")
     st.markdown("---")
+
     step_names = ["📋 Keywords", "🌐 Domains", "🕷️ Crawl", "🧮 TF-IDF", "📊 Ahrefs"]
     for i, name in enumerate(step_names, 1):
         if i < st.session_state.step:
@@ -375,15 +342,29 @@ with st.sidebar:
             f'''<div class="step-pill {cls}">{icon} Step {i}: {name}</div>''',
             unsafe_allow_html=True
         )
+
     st.markdown("---")
-    st.markdown("### ⚙️ Configuration")
-    cfg["max_depth"] = st.slider("Crawl Depth",          1,    3,    cfg["max_depth"])
-    cfg["max_pages"] = st.slider("Max Pages / Domain",   10,   100,  cfg["max_pages"],  step=10)
-    cfg["workers"]   = st.slider("Parallel Workers",     5,    30,   cfg["workers"],    step=5)
-    cfg["threshold"] = st.slider("Similarity Threshold", 0.05, 0.95, cfg["threshold"],  step=0.05)
+    st.markdown("### ⚙️ Crawl Settings")
+    cfg["max_depth"] = st.slider("Crawl Depth",        1,  3,  cfg["max_depth"])
+    cfg["max_pages"] = st.slider("Max Pages / Domain", 10, 1000, cfg["max_pages"], step=10)
+    cfg["workers"]   = st.slider("Parallel Workers",   5,  30, cfg["workers"],   step=5)
+
+    st.markdown("---")
+    st.markdown("### 🎯 Similarity Range Filter")
+    st.caption("Set the min–max cosine similarity window. All pages scoring within this range will be captured.")
+    sim_range = st.slider(
+        "Similarity Range",
+        min_value=0.01, max_value=1.0,
+        value=(cfg["sim_min"], cfg["sim_max"]),
+        step=0.01,
+        help="Captures all pages with similarity score between these two values."
+    )
+    cfg["sim_min"], cfg["sim_max"] = sim_range[0], sim_range[1]
+    st.caption(f"Current window: **{cfg['sim_min']:.2f}** → **{cfg['sim_max']:.2f}**")
+
     st.markdown("---")
 
-    # ── Cache stats in sidebar ───────────────────────────────────────────
+    # Cache stats
     dc = len(st.session_state.ahrefs_domain_cache)
     pc = len(st.session_state.ahrefs_page_cache)
     if dc > 0 or pc > 0:
@@ -604,9 +585,18 @@ elif st.session_state.step == 4:
     c1, c2, c3 = st.columns(3)
     c1.metric("Domains",       domain_count)
     c2.metric("Crawled Pages", total_pages)
-    c3.metric("Threshold",     cfg["threshold"])
+    c3.metric("Sim Range",     f"{cfg['sim_min']:.2f} – {cfg['sim_max']:.2f}")
 
     st.markdown("---")
+
+    # ── Similarity range callout ───────────────────────────────────────────
+    filter_card(
+        f"🎯 <b>Similarity Range Active:</b> <code>{cfg['sim_min']:.2f}</code> → "
+        f"<code>{cfg['sim_max']:.2f}</code><br>"
+        "All pages whose cosine similarity score falls <b>within this window</b> will be captured. "
+        "Adjust the <b>Similarity Range</b> slider in the sidebar to widen or narrow the band."
+    )
+
     st.markdown("### 🎯 Select Matching Strategy")
     col_opt1, col_opt2 = st.columns(2)
     with col_opt1:
@@ -661,11 +651,13 @@ elif st.session_state.step == 4:
             if st.button("▶ Proceed to Ahrefs Enrichment", type="primary", use_container_width=True):
                 st.session_state.step = 5; st.rerun()
         else:
-            st.warning("⚠️ Previous run returned 0 matches — try lower threshold or switch strategy.")
+            st.warning("⚠️ Previous run returned 0 matches — adjust similarity range and re-run.")
 
     if start_match:
-        keywords  = st.session_state.keywords
-        threshold = cfg["threshold"]
+        keywords = st.session_state.keywords
+        sim_min  = cfg["sim_min"]
+        sim_max  = cfg["sim_max"]
+
         all_pages = (
             [to_base_url(d) for d in st.session_state.domains]
             if strategy == "Domain-Level"
@@ -698,17 +690,21 @@ elif st.session_state.step == 4:
             corpus       = [" ".join(keywords)] + [page_texts[u] for u in valid_urls]
             vectorizer   = TfidfVectorizer(stop_words="english", max_features=15000, ngram_range=(1, 2))
             tfidf_matrix = vectorizer.fit_transform(corpus)
+
             pb.progress(0.80, text="📐 Computing cosine similarity...")
             similarities = cosine_similarity(tfidf_matrix[0], tfidf_matrix[1:])[0]
-            pb.progress(0.95, text="🔎 Filtering by threshold...")
+
+            pb.progress(0.95, text=f"🔎 Filtering by range {sim_min:.2f} – {sim_max:.2f}...")
             max_score = float(np.max(similarities)) if len(similarities) > 0 else 0.0
+            min_score = float(np.min(similarities)) if len(similarities) > 0 else 0.0
 
             score_caption(
-                f"🔍 Max similarity: <b>{max_score:.4f}</b> &nbsp;·&nbsp; "
-                f"Threshold: <b>{threshold}</b> &nbsp;·&nbsp; Strategy: <b>{strategy}</b> &nbsp;·&nbsp; "
-                f"{'✅ Matches expected' if max_score >= threshold else '⚠️ Lower threshold — no matches above cutoff'}"
+                f"📊 Score range in data: <b>{min_score:.4f}</b> – <b>{max_score:.4f}</b> &nbsp;·&nbsp; "
+                f"Active filter window: <b>{sim_min:.2f}</b> → <b>{sim_max:.2f}</b> &nbsp;·&nbsp; "
+                f"Strategy: <b>{strategy}</b>"
             )
 
+            # ── RANGE filter (not single threshold) ──────────────────────
             matches = [
                 {"keyword":    " | ".join(keywords[:8]),
                  "Page_URL":   url,
@@ -716,17 +712,19 @@ elif st.session_state.step == 4:
                  "similarity": round(float(score), 4),
                  "strategy":   strategy}
                 for url, score in zip(valid_urls, similarities)
-                if score >= threshold
+                if sim_min <= score <= sim_max
             ]
 
             matches_df = pd.DataFrame(matches)
             if not matches_df.empty:
                 matches_df = matches_df.sort_values("similarity", ascending=False).reset_index(drop=True)
             else:
-                matches_df = pd.DataFrame(columns=["keyword", "Page_URL", "Domain", "similarity", "strategy"])
+                matches_df = pd.DataFrame(
+                    columns=["keyword", "Page_URL", "Domain", "similarity", "strategy"]
+                )
 
             st.session_state.matches_df = matches_df
-            pb.progress(1.0, text=f"✅ Done — {len(matches_df)} matches found!")
+            pb.progress(1.0, text=f"✅ Done — {len(matches_df)} matches in range [{sim_min:.2f}, {sim_max:.2f}]")
 
             c1, c2, c3, c4 = st.columns(4)
             c1.metric("Pages Analyzed",  len(page_texts))
@@ -736,10 +734,24 @@ elif st.session_state.step == 4:
 
             if matches_df.empty:
                 st.warning(
-                    f"⚠️ No matches above **{threshold}**. Max score: **{max_score:.4f}**. "
-                    "Lower the threshold in the sidebar or switch strategy."
+                    f"⚠️ No pages scored between **{sim_min:.2f}** and **{sim_max:.2f}**. "
+                    f"Data range was **{min_score:.4f}** – **{max_score:.4f}**. "
+                    "Adjust the Similarity Range slider in the sidebar."
                 )
             else:
+                # Similarity distribution
+                bins   = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+                labels = [f"{b:.1f}–{bins[i+1]:.1f}" for i, b in enumerate(bins[:-1])]
+                matches_df["score_band"] = pd.cut(matches_df["similarity"], bins=bins, labels=labels, right=False)
+                dist = matches_df["score_band"].value_counts().sort_index()
+                filter_summary(
+                    "📊 <b>Score distribution of matched pages:</b> &nbsp; " +
+                    " &nbsp;|&nbsp; ".join(
+                        [f"<code>{band}</code>: <b>{cnt}</b>" for band, cnt in dist.items() if cnt > 0]
+                    )
+                )
+                matches_df = matches_df.drop(columns=["score_band"])
+
                 st.markdown("### Top Matching Pages")
                 st.dataframe(matches_df.head(100), use_container_width=True, height=400)
                 csv_b = matches_df.to_csv(index=False).encode("utf-8")
@@ -749,7 +761,7 @@ elif st.session_state.step == 4:
                     st.session_state.step = 5; st.rerun()
 
 # ══════════════════════════════════════════════════════════════════════════════
-# STEP 5 — AHREFS TRAFFIC & RANKING ENRICHMENT  (with full caching + page fix)
+# STEP 5 — AHREFS ENRICHMENT + PRE-FILTER
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.step == 5:
     st.markdown("## Step 5 · Traffic & Ranking Enrichment (Ahrefs)")
@@ -761,21 +773,19 @@ elif st.session_state.step == 5:
             st.session_state.step = 4; st.rerun()
         st.stop()
 
-    # ── Cache stats ──────────────────────────────────────────────────────
     dc = len(st.session_state.ahrefs_domain_cache)
     pc = len(st.session_state.ahrefs_page_cache)
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("URLs to Enrich",  len(matches_df))
-    c2.metric("Unique Domains",  matches_df["Domain"].nunique())
-    c3.metric("Domains Cached",  dc)
-    c4.metric("Pages Cached",    pc)
+    c1.metric("URLs to Enrich", len(matches_df))
+    c2.metric("Unique Domains", matches_df["Domain"].nunique())
+    c3.metric("Domains Cached", dc)
+    c4.metric("Pages Cached",   pc)
 
     if dc > 0 or pc > 0:
         cache_badge(
             f"💾 Session cache active — "
-            f"<b>{dc}</b> domain metrics &amp; <b>{pc}</b> page traffic values will be reused "
-            f"without additional API calls."
+            f"<b>{dc}</b> domain metrics &amp; <b>{pc}</b> page traffic values will be reused."
         )
 
     st.markdown("---")
@@ -783,18 +793,40 @@ elif st.session_state.step == 5:
     info_card(
         "Enter your Ahrefs API Bearer token. Never stored or logged. "
         "Find it at: <b>app.ahrefs.com → Account → API</b><br>"
-        "<b>Page traffic fix:</b> uses exact-mode first, falls back to prefix-mode if traffic = 0."
+        "<b>Page traffic:</b> uses exact-mode first, falls back to prefix-mode if traffic = 0."
     )
 
     api_token = st.text_input("Ahrefs API Bearer Token", type="password",
                               placeholder="Paste your API token here...")
-    delay     = st.slider("API Request Delay (seconds)", 0.5, 3.0, 1.5, 0.25)
+    delay = st.slider("API Request Delay (seconds)", 0.5, 3.0, 1.5, 0.25)
 
     st.markdown("#### Select Metrics to Fetch")
-    c1, c2, c3 = st.columns(3)
-    fetch_dr = c1.checkbox("Domain Rating (DR)",     value=True)
-    fetch_dt = c2.checkbox("Monthly Domain Traffic", value=True)
-    fetch_pt = c3.checkbox("Monthly Page Traffic",   value=True)
+    mc1, mc2, mc3 = st.columns(3)
+    fetch_dr = mc1.checkbox("Domain Rating (DR)",     value=True)
+    fetch_dt = mc2.checkbox("Monthly Domain Traffic", value=True)
+    fetch_pt = mc3.checkbox("Monthly Page Traffic",   value=True)
+
+    # ── PRE-FILTER SETTINGS ───────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("### 🧹 Pre-Filter Settings")
+    filter_card(
+        "Define minimum quality thresholds. Results <b>not meeting all active filters</b> will be "
+        "automatically removed from the final output before download. "
+        "These filters run <b>after</b> Ahrefs enrichment.<br><br>"
+        "🚫 <b>Page Traffic = 0</b> is always removed. &nbsp;·&nbsp; "
+        "Set <b>Domain Traffic</b> and <b>DR</b> minimums below."
+    )
+
+    pf1, pf2, pf3 = st.columns(3)
+    with pf1:
+        remove_zero_pt = pf1.checkbox("Remove Page Traffic = 0", value=True,
+                                      help="Exclude any page with 0 organic traffic after both exact+prefix attempts.")
+    with pf2:
+        min_domain_traffic = pf2.number_input("Min Domain Traffic", min_value=0, value=1000, step=100,
+                                              help="Exclude domains with organic traffic below this value.")
+    with pf3:
+        min_dr = pf3.number_input("Min Domain Rating (DR)", min_value=0, max_value=100, value=20, step=1,
+                                  help="Exclude domains with DR below this value.")
 
     col_back, col_start = st.columns([1, 4])
     with col_back:
@@ -823,13 +855,12 @@ elif st.session_state.step == 5:
         df["monthly_domain_traffic"] = None
         df["Monthly_Page_Traffic"]   = None
 
-        # Pull references to session-level caches
         domain_cache = st.session_state.ahrefs_domain_cache
         page_cache   = st.session_state.ahrefs_page_cache
 
-        total_rows  = len(df)
-        api_calls   = 0
-        cache_hits  = 0
+        total_rows = len(df)
+        api_calls  = 0
+        cache_hits = 0
 
         pb       = st.progress(0, text="📡 Starting Ahrefs enrichment...")
         stat_box = st.empty()
@@ -839,18 +870,12 @@ elif st.session_state.step == 5:
             domain   = str(row["Domain"]).strip()
             page_url = _normalise_url(str(row["Page_URL"]).strip())
 
-            # ── Domain metrics (cached per domain) ───────────────────────
+            # ── Domain metrics (cached) ───────────────────────────────────
             if domain not in domain_cache:
-                dr = None
-                dt = None
-                if fetch_dr:
-                    dr = get_domain_rating(domain, api_token)
-                    api_calls += 1
-                    time.sleep(delay)
-                if fetch_dt:
-                    dt = get_domain_traffic(domain, api_token)
-                    api_calls += 1
-                    time.sleep(delay)
+                dr = get_domain_rating(domain, api_token)  if fetch_dr else None
+                if fetch_dr: time.sleep(delay); api_calls += 1
+                dt = get_domain_traffic(domain, api_token) if fetch_dt else None
+                if fetch_dt: time.sleep(delay); api_calls += 1
                 domain_cache[domain] = {"dr": dr, "dt": dt}
             else:
                 cache_hits += 1
@@ -858,27 +883,22 @@ elif st.session_state.step == 5:
             df.at[i, "domain_rating"]         = domain_cache[domain]["dr"]
             df.at[i, "monthly_domain_traffic"] = domain_cache[domain]["dt"]
 
-            # ── Page traffic (cached per URL) ────────────────────────────
+            # ── Page traffic (cached, exact+prefix) ───────────────────────
             if fetch_pt:
                 if page_url not in page_cache:
                     pt = get_page_traffic(page_url, api_token)
-                    # get_page_traffic already does exact + prefix fallback
                     page_cache[page_url] = pt
-                    api_calls += 2   # counts both passes (worst case)
+                    api_calls += 2
                     time.sleep(delay)
                 else:
                     pt = page_cache[page_url]
                     cache_hits += 1
                 df.at[i, "Monthly_Page_Traffic"] = pt
 
-            # ── Update caches in session state ───────────────────────────
             st.session_state.ahrefs_domain_cache = domain_cache
             st.session_state.ahrefs_page_cache   = page_cache
 
-            pb.progress(
-                (idx + 1) / total_rows,
-                text=f"📡 {idx+1}/{total_rows} · {domain}"
-            )
+            pb.progress((idx + 1) / total_rows, text=f"📡 {idx+1}/{total_rows} · {domain}")
             stat_box.markdown(
                 f"**URL:** `{page_url[:65]}`  ·  "
                 f"DR: **{domain_cache[domain]['dr']}**  ·  "
@@ -886,24 +906,66 @@ elif st.session_state.step == 5:
                 f"Page Traffic: **{page_cache.get(page_url, '—')}**"
             )
             info_box.markdown(
-                f"🔄 API calls made: **{api_calls}** &nbsp;|&nbsp; "
-                f"💾 Cache hits: **{cache_hits}**"
+                f"🔄 API calls: **{api_calls}** &nbsp;|&nbsp; 💾 Cache hits: **{cache_hits}**"
             )
 
-        pb.progress(1.0, text="✅ Ahrefs enrichment complete!")
+        pb.progress(1.0, text="✅ Enrichment complete! Applying pre-filters...")
         stat_box.empty()
         info_box.empty()
 
-        # ── Final column order ────────────────────────────────────────────
+        # ── Reorder columns before filtering ─────────────────────────────
         final_cols = ["keyword", "Page_URL", "similarity", "strategy",
                       "Monthly_Page_Traffic", "Domain",
                       "monthly_domain_traffic", "domain_rating"]
         df = df[[c for c in final_cols if c in df.columns]]
+
+        # ── PRE-FILTER APPLICATION ────────────────────────────────────────
+        before_filter = len(df)
+
+        # Convert to numeric safely
+        df["domain_rating"]          = pd.to_numeric(df["domain_rating"],          errors="coerce")
+        df["monthly_domain_traffic"] = pd.to_numeric(df["monthly_domain_traffic"], errors="coerce")
+        df["Monthly_Page_Traffic"]   = pd.to_numeric(df["Monthly_Page_Traffic"],   errors="coerce").fillna(0).astype(int)
+
+        removed_pt = removed_dt = removed_dr = 0
+
+        if remove_zero_pt and "Monthly_Page_Traffic" in df.columns:
+            mask        = df["Monthly_Page_Traffic"] <= 0
+            removed_pt  = mask.sum()
+            df          = df[~mask]
+
+        if min_domain_traffic > 0 and "monthly_domain_traffic" in df.columns:
+            mask        = df["monthly_domain_traffic"].fillna(0) < min_domain_traffic
+            removed_dt  = mask.sum()
+            df          = df[~mask]
+
+        if min_dr > 0 and "domain_rating" in df.columns:
+            mask        = df["domain_rating"].fillna(0) < min_dr
+            removed_dr  = mask.sum()
+            df          = df[~mask]
+
+        df = df.reset_index(drop=True)
+        after_filter = len(df)
         st.session_state.enriched_df = df
+
+        # ── Filter summary ────────────────────────────────────────────────
+        st.markdown("### 🧹 Pre-Filter Results")
+        fc1, fc2, fc3, fc4 = st.columns(4)
+        fc1.metric("Before Filter", before_filter)
+        fc2.metric("Removed (Page Traffic = 0)", removed_pt)
+        fc3.metric(f"Removed (Domain Traffic < {min_domain_traffic:,})", removed_dt)
+        fc4.metric(f"Removed (DR < {min_dr})", removed_dr)
+
+        filter_summary(
+            f"✅ <b>{after_filter}</b> opportunities passed all filters out of <b>{before_filter}</b> total. &nbsp;·&nbsp; "
+            f"🚫 Page traffic = 0: <b>{removed_pt}</b> removed &nbsp;·&nbsp; "
+            f"🚫 Domain traffic &lt; {min_domain_traffic:,}: <b>{removed_dt}</b> removed &nbsp;·&nbsp; "
+            f"🚫 DR &lt; {min_dr}: <b>{removed_dr}</b> removed"
+        )
 
         st.markdown("### 🎯 Final Link Opportunities")
         c1, c2, c3, c4, c5 = st.columns(5)
-        c1.metric("Total Opportunities", len(df))
+        c1.metric("Total Opportunities", after_filter)
         avg_dr = df["domain_rating"].dropna().mean()          if "domain_rating"          in df.columns else 0
         avg_dt = df["monthly_domain_traffic"].dropna().mean() if "monthly_domain_traffic" in df.columns else 0
         avg_pt = df["Monthly_Page_Traffic"].dropna().mean()   if "Monthly_Page_Traffic"   in df.columns else 0
@@ -912,13 +974,16 @@ elif st.session_state.step == 5:
         c4.metric("Avg Page Traffic",   f"{int(avg_pt):,}")
         c5.metric("API Calls Saved",    cache_hits)
 
-        st.dataframe(df, use_container_width=True, height=500)
+        if df.empty:
+            st.warning("⚠️ All results were filtered out. Try lowering the pre-filter thresholds.")
+        else:
+            st.dataframe(df, use_container_width=True, height=500)
 
         col_d1, col_d2 = st.columns(2)
         with col_d1:
             csv_b = df.to_csv(index=False).encode("utf-8")
             st.download_button(
-                "⬇️ Download Full Opportunities CSV", csv_b,
+                "⬇️ Download Final Opportunities CSV", csv_b,
                 f"linkbuilding_opportunities_{datetime.today().strftime('%Y%m%d')}.csv",
                 "text/csv", type="primary", use_container_width=True
             )
