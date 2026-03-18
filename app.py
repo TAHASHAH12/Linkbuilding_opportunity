@@ -11,6 +11,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from bs4 import BeautifulSoup
 from datetime import datetime
+import warnings
+import re
+
+warnings.filterwarnings("ignore")
 
 # ─── PAGE CONFIG ──────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -116,7 +120,7 @@ st.markdown("""
 div[data-testid="stDataFrame"] { border-radius:8px; }
 .stDownloadButton > button { width:100%; }
 div[data-testid="stProgressBar"] > div > div { background-color:var(--lb-primary-light) !important; }
-div[data-testid="stMetricLabel"] > div        { color:var(--lb-text-muted) !important; }
+div[data-testid="stMetricLabel"] > div { color:var(--lb-text-muted) !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -160,21 +164,101 @@ def extract_domain(url: str) -> str:
 def should_exclude(url: str) -> bool:
     return any(pat in url for pat in cfg["exclude"])
 
+# ─── FIX: safe HTML decode + BeautifulSoup guard ─────────────────────────────
+SKIP_CONTENT_TYPES = (
+    "application/pdf", "application/zip", "application/octet-stream",
+    "image/", "video/", "audio/", "font/",
+    "application/javascript", "text/css",
+)
+
+def is_html_response(response: requests.Response) -> bool:
+    """Return True only for text/html content. Skips binary, PDF, JS, CSS etc."""
+    ct = response.headers.get("Content-Type", "").lower()
+    if not ct:
+        return True  # assume HTML if no header
+    if "text/html" in ct or "application/xhtml" in ct:
+        return True
+    for skip in SKIP_CONTENT_TYPES:
+        if ct.startswith(skip):
+            return False
+    return False
+
+def decode_response(response: requests.Response) -> str:
+    """
+    Safely decode response bytes to str.
+    - Respects charset from Content-Type header
+    - Falls back to utf-8 with replace error handling
+    - Returns empty string if content appears binary
+    """
+    content = response.content  # raw bytes
+
+    # Detect binary content via null bytes
+    if b"\x00" in content[:1024]:
+        return ""
+
+    # Try encoding from Content-Type header first
+    ct = response.headers.get("Content-Type", "")
+    charset_match = re.search(r"charset=([\w-]+)", ct, re.IGNORECASE)
+    encoding = charset_match.group(1) if charset_match else None
+
+    # Try declared encoding, then utf-8, then latin-1 as last resort
+    for enc in filter(None, [encoding, "utf-8", "latin-1"]):
+        try:
+            return content.decode(enc, errors="replace")
+        except (LookupError, UnicodeDecodeError):
+            continue
+
+    return content.decode("latin-1", errors="replace")
+
 def clean_text(html: str) -> str:
-    soup = BeautifulSoup(html, "html.parser")
-    for tag in soup(["script", "style", "nav", "footer", "header", "aside"]):
-        tag.decompose()
-    return " ".join(soup.get_text(separator=" ").split())[:50000]
+    """
+    Parse HTML to plain text safely.
+    - Uses lxml parser for speed/robustness; falls back to html.parser
+    - Catches all BS4/parser exceptions and returns empty string
+    """
+    if not html or not html.strip():
+        return ""
+    # Strip obvious binary garbage before parsing
+    try:
+        html.encode("utf-8")
+    except Exception:
+        return ""
+
+    parsers = ["lxml", "html.parser"]
+    for parser in parsers:
+        try:
+            soup = BeautifulSoup(html, parser)
+            for tag in soup(["script", "style", "nav", "footer", "header", "aside"]):
+                tag.decompose()
+            return " ".join(soup.get_text(separator=" ").split())[:50000]
+        except Exception:
+            continue
+    return ""
 
 CRAWL_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; LinkBuilderBot/1.0)",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "User-Agent":      "Mozilla/5.0 (compatible; LinkBuilderBot/1.0)",
+    "Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Accept-Encoding": "gzip, deflate",   # NO brotli — avoids br decode issues
 }
 
-def safe_get(url: str, timeout: int = 10) -> tuple:
+def safe_get(url: str, timeout: int = 10) -> tuple[int, str]:
+    """
+    Fetch URL and return (status_code, decoded_html_string).
+    Returns (0, "") on any error or non-HTML content.
+    """
     try:
-        r = requests.get(url, headers=CRAWL_HEADERS, timeout=timeout, allow_redirects=True)
-        return r.status_code, r.text
+        r = requests.get(
+            url,
+            headers=CRAWL_HEADERS,
+            timeout=timeout,
+            allow_redirects=True,
+            stream=False,
+        )
+        if not is_html_response(r):
+            return r.status_code, ""
+        html = decode_response(r)
+        return r.status_code, html
     except Exception:
         return 0, ""
 
@@ -205,7 +289,7 @@ def get_sitemap_pages(base_url: str, max_pages: int) -> list:
     for path in ["/sitemap.xml", "/sitemap_index.xml", "/sitemap/", "/sitemap1.xml"]:
         url = base_url.rstrip("/") + path
         status, content = safe_get(url)
-        if status == 200 and ("<urlset" in content or "<sitemapindex" in content):
+        if status == 200 and content and ("<urlset" in content or "<sitemapindex" in content):
             pages = parse_sitemap_xml(content, {url}, max_pages)
             if pages:
                 return [p for p in pages if not should_exclude(p)][:max_pages]
@@ -222,31 +306,45 @@ def shallow_crawl(base_url: str, max_depth: int, max_pages: int) -> list:
         status, content = safe_get(cur)
         if status != 200 or not content:
             continue
-        soup = BeautifulSoup(content, "html.parser")
+        try:
+            soup = BeautifulSoup(content, "html.parser")
+        except Exception:
+            continue
         for a in soup.find_all("a", href=True):
-            full = urljoin(base_url, str(a["href"])).split("#")[0].split("?")[0]
-            if urlparse(full).netloc != base_netloc:
+            try:
+                full = urljoin(base_url, str(a["href"])).split("#")[0].split("?")[0]
+                if urlparse(full).netloc != base_netloc:
+                    continue
+                if should_exclude(full) or full in visited:
+                    continue
+                if full not in found:
+                    found.append(full)
+                if depth + 1 <= max_depth and (full, depth + 1) not in queue:
+                    queue.append((full, depth + 1))
+            except Exception:
                 continue
-            if should_exclude(full) or full in visited:
-                continue
-            if full not in found:
-                found.append(full)
-            if depth + 1 <= max_depth and (full, depth + 1) not in queue:
-                queue.append((full, depth + 1))
     return found[:max_pages]
 
 def crawl_domain_worker(domain: str) -> dict:
-    base_url = to_base_url(domain)
-    pages    = get_sitemap_pages(base_url, cfg["max_pages"])
-    if pages:
-        return {"domain": domain, "base_url": base_url, "pages": pages, "method": "sitemap"}
-    pages = shallow_crawl(base_url, cfg["max_depth"], cfg["max_pages"])
-    return {"domain": domain, "base_url": base_url, "pages": pages, "method": "crawl"}
+    try:
+        base_url = to_base_url(domain)
+        pages    = get_sitemap_pages(base_url, cfg["max_pages"])
+        if pages:
+            return {"domain": domain, "base_url": base_url, "pages": pages, "method": "sitemap"}
+        pages = shallow_crawl(base_url, cfg["max_depth"], cfg["max_pages"])
+        return {"domain": domain, "base_url": base_url, "pages": pages, "method": "crawl"}
+    except Exception:
+        return {"domain": domain, "base_url": "", "pages": [], "method": "error"}
 
-def fetch_page_text(url: str) -> tuple:
-    status, html = safe_get(url, timeout=12)
-    if status == 200 and html:
-        return url, clean_text(html)
+def fetch_page_text(url: str) -> tuple[str, str]:
+    """Fetch and clean page text. Always returns (url, str) — never raises."""
+    try:
+        status, html = safe_get(url, timeout=12)
+        if status == 200 and html:
+            text = clean_text(html)
+            return url, text
+    except Exception:
+        pass
     return url, ""
 
 # ─── AHREFS API ───────────────────────────────────────────────────────────────
@@ -288,13 +386,11 @@ def _normalise_url(url: str) -> str:
 
 def get_page_traffic(page_url: str, token: str) -> int:
     url = _normalise_url(page_url)
-    # Pass 1: exact
-    d1 = _ahrefs_get("metrics",
+    d1  = _ahrefs_get("metrics",
         {"target": url, "date": TODAY, "mode": "exact", "protocol": "both"}, token)
-    t1 = (d1.get("metrics", {}).get("org_traffic") or 0) if d1 else 0
+    t1  = (d1.get("metrics", {}).get("org_traffic") or 0) if d1 else 0
     if t1 > 0:
         return t1
-    # Pass 2: prefix fallback
     d2 = _ahrefs_get("metrics",
         {"target": url, "date": TODAY, "mode": "prefix", "protocol": "both"}, token)
     t2 = (d2.get("metrics", {}).get("org_traffic") or 0) if d2 else 0
@@ -329,7 +425,6 @@ def filter_summary(text: str):
 with st.sidebar:
     st.markdown("## 🔗 LinkBuilder Pro")
     st.markdown("---")
-
     step_names = ["📋 Keywords", "🌐 Domains", "🕷️ Crawl", "🧮 TF-IDF", "📊 Ahrefs"]
     for i, name in enumerate(step_names, 1):
         if i < st.session_state.step:
@@ -342,12 +437,11 @@ with st.sidebar:
             f'''<div class="step-pill {cls}">{icon} Step {i}: {name}</div>''',
             unsafe_allow_html=True
         )
-
     st.markdown("---")
     st.markdown("### ⚙️ Crawl Settings")
-    cfg["max_depth"] = st.slider("Crawl Depth",        1,  3,  cfg["max_depth"])
-    cfg["max_pages"] = st.slider("Max Pages / Domain", 10, 1000, cfg["max_pages"], step=10)
-    cfg["workers"]   = st.slider("Parallel Workers",   5,  30, cfg["workers"],   step=5)
+    cfg["max_depth"] = st.slider("Crawl Depth",        1,    3,    cfg["max_depth"])
+    cfg["max_pages"] = st.slider("Max Pages / Domain", 10,   1000, cfg["max_pages"], step=10)
+    cfg["workers"]   = st.slider("Parallel Workers",   5,    30,   cfg["workers"],   step=5)
 
     st.markdown("---")
     st.markdown("### 🎯 Similarity Range Filter")
@@ -363,8 +457,6 @@ with st.sidebar:
     st.caption(f"Current window: **{cfg['sim_min']:.2f}** → **{cfg['sim_max']:.2f}**")
 
     st.markdown("---")
-
-    # Cache stats
     dc = len(st.session_state.ahrefs_domain_cache)
     pc = len(st.session_state.ahrefs_page_cache)
     if dc > 0 or pc > 0:
@@ -588,8 +680,6 @@ elif st.session_state.step == 4:
     c3.metric("Sim Range",     f"{cfg['sim_min']:.2f} – {cfg['sim_max']:.2f}")
 
     st.markdown("---")
-
-    # ── Similarity range callout ───────────────────────────────────────────
     filter_card(
         f"🎯 <b>Similarity Range Active:</b> <code>{cfg['sim_min']:.2f}</code> → "
         f"<code>{cfg['sim_max']:.2f}</code><br>"
@@ -673,9 +763,12 @@ elif st.session_state.step == 4:
         with concurrent.futures.ThreadPoolExecutor(max_workers=cfg["workers"]) as executor:
             future_map = {executor.submit(fetch_page_text, url): url for url in all_pages}
             for future in concurrent.futures.as_completed(future_map):
-                url, text = future.result()
-                if text:
-                    page_texts[url] = text
+                try:
+                    url, text = future.result(timeout=20)
+                    if text:
+                        page_texts[url] = text
+                except Exception:
+                    pass
                 completed += 1
                 pb.progress(min(completed / total_fetch * 0.6, 0.59),
                             text=f"📥 {completed}/{total_fetch} ({len(page_texts)} OK)")
@@ -694,7 +787,7 @@ elif st.session_state.step == 4:
             pb.progress(0.80, text="📐 Computing cosine similarity...")
             similarities = cosine_similarity(tfidf_matrix[0], tfidf_matrix[1:])[0]
 
-            pb.progress(0.95, text=f"🔎 Filtering by range {sim_min:.2f} – {sim_max:.2f}...")
+            pb.progress(0.95, text=f"🔎 Filtering range {sim_min:.2f} – {sim_max:.2f}...")
             max_score = float(np.max(similarities)) if len(similarities) > 0 else 0.0
             min_score = float(np.min(similarities)) if len(similarities) > 0 else 0.0
 
@@ -704,7 +797,6 @@ elif st.session_state.step == 4:
                 f"Strategy: <b>{strategy}</b>"
             )
 
-            # ── RANGE filter (not single threshold) ──────────────────────
             matches = [
                 {"keyword":    " | ".join(keywords[:8]),
                  "Page_URL":   url,
@@ -739,19 +831,17 @@ elif st.session_state.step == 4:
                     "Adjust the Similarity Range slider in the sidebar."
                 )
             else:
-                # Similarity distribution
                 bins   = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
                 labels = [f"{b:.1f}–{bins[i+1]:.1f}" for i, b in enumerate(bins[:-1])]
                 matches_df["score_band"] = pd.cut(matches_df["similarity"], bins=bins, labels=labels, right=False)
                 dist = matches_df["score_band"].value_counts().sort_index()
                 filter_summary(
-                    "📊 <b>Score distribution of matched pages:</b> &nbsp; " +
+                    "📊 <b>Score distribution:</b> &nbsp; " +
                     " &nbsp;|&nbsp; ".join(
                         [f"<code>{band}</code>: <b>{cnt}</b>" for band, cnt in dist.items() if cnt > 0]
                     )
                 )
                 matches_df = matches_df.drop(columns=["score_band"])
-
                 st.markdown("### Top Matching Pages")
                 st.dataframe(matches_df.head(100), use_container_width=True, height=400)
                 csv_b = matches_df.to_csv(index=False).encode("utf-8")
@@ -806,7 +896,6 @@ elif st.session_state.step == 5:
     fetch_dt = mc2.checkbox("Monthly Domain Traffic", value=True)
     fetch_pt = mc3.checkbox("Monthly Page Traffic",   value=True)
 
-    # ── PRE-FILTER SETTINGS ───────────────────────────────────────────────
     st.markdown("---")
     st.markdown("### 🧹 Pre-Filter Settings")
     filter_card(
@@ -818,15 +907,9 @@ elif st.session_state.step == 5:
     )
 
     pf1, pf2, pf3 = st.columns(3)
-    with pf1:
-        remove_zero_pt = pf1.checkbox("Remove Page Traffic = 0", value=True,
-                                      help="Exclude any page with 0 organic traffic after both exact+prefix attempts.")
-    with pf2:
-        min_domain_traffic = pf2.number_input("Min Domain Traffic", min_value=0, value=1000, step=100,
-                                              help="Exclude domains with organic traffic below this value.")
-    with pf3:
-        min_dr = pf3.number_input("Min Domain Rating (DR)", min_value=0, max_value=100, value=20, step=1,
-                                  help="Exclude domains with DR below this value.")
+    remove_zero_pt     = pf1.checkbox("Remove Page Traffic = 0", value=True)
+    min_domain_traffic = pf2.number_input("Min Domain Traffic", min_value=0, value=1000, step=100)
+    min_dr             = pf3.number_input("Min Domain Rating (DR)", min_value=0, max_value=100, value=20, step=1)
 
     col_back, col_start = st.columns([1, 4])
     with col_back:
@@ -857,10 +940,9 @@ elif st.session_state.step == 5:
 
         domain_cache = st.session_state.ahrefs_domain_cache
         page_cache   = st.session_state.ahrefs_page_cache
-
-        total_rows = len(df)
-        api_calls  = 0
-        cache_hits = 0
+        total_rows   = len(df)
+        api_calls    = 0
+        cache_hits   = 0
 
         pb       = st.progress(0, text="📡 Starting Ahrefs enrichment...")
         stat_box = st.empty()
@@ -870,7 +952,6 @@ elif st.session_state.step == 5:
             domain   = str(row["Domain"]).strip()
             page_url = _normalise_url(str(row["Page_URL"]).strip())
 
-            # ── Domain metrics (cached) ───────────────────────────────────
             if domain not in domain_cache:
                 dr = get_domain_rating(domain, api_token)  if fetch_dr else None
                 if fetch_dr: time.sleep(delay); api_calls += 1
@@ -883,7 +964,6 @@ elif st.session_state.step == 5:
             df.at[i, "domain_rating"]         = domain_cache[domain]["dr"]
             df.at[i, "monthly_domain_traffic"] = domain_cache[domain]["dt"]
 
-            # ── Page traffic (cached, exact+prefix) ───────────────────────
             if fetch_pt:
                 if page_url not in page_cache:
                     pt = get_page_traffic(page_url, api_token)
@@ -913,16 +993,12 @@ elif st.session_state.step == 5:
         stat_box.empty()
         info_box.empty()
 
-        # ── Reorder columns before filtering ─────────────────────────────
         final_cols = ["keyword", "Page_URL", "similarity", "strategy",
                       "Monthly_Page_Traffic", "Domain",
                       "monthly_domain_traffic", "domain_rating"]
         df = df[[c for c in final_cols if c in df.columns]]
 
-        # ── PRE-FILTER APPLICATION ────────────────────────────────────────
         before_filter = len(df)
-
-        # Convert to numeric safely
         df["domain_rating"]          = pd.to_numeric(df["domain_rating"],          errors="coerce")
         df["monthly_domain_traffic"] = pd.to_numeric(df["monthly_domain_traffic"], errors="coerce")
         df["Monthly_Page_Traffic"]   = pd.to_numeric(df["Monthly_Page_Traffic"],   errors="coerce").fillna(0).astype(int)
@@ -930,37 +1006,36 @@ elif st.session_state.step == 5:
         removed_pt = removed_dt = removed_dr = 0
 
         if remove_zero_pt and "Monthly_Page_Traffic" in df.columns:
-            mask        = df["Monthly_Page_Traffic"] <= 0
-            removed_pt  = mask.sum()
-            df          = df[~mask]
+            mask = df["Monthly_Page_Traffic"] <= 0
+            removed_pt = mask.sum()
+            df = df[~mask]
 
         if min_domain_traffic > 0 and "monthly_domain_traffic" in df.columns:
-            mask        = df["monthly_domain_traffic"].fillna(0) < min_domain_traffic
-            removed_dt  = mask.sum()
-            df          = df[~mask]
+            mask = df["monthly_domain_traffic"].fillna(0) < min_domain_traffic
+            removed_dt = mask.sum()
+            df = df[~mask]
 
         if min_dr > 0 and "domain_rating" in df.columns:
-            mask        = df["domain_rating"].fillna(0) < min_dr
-            removed_dr  = mask.sum()
-            df          = df[~mask]
+            mask = df["domain_rating"].fillna(0) < min_dr
+            removed_dr = mask.sum()
+            df = df[~mask]
 
         df = df.reset_index(drop=True)
         after_filter = len(df)
         st.session_state.enriched_df = df
 
-        # ── Filter summary ────────────────────────────────────────────────
         st.markdown("### 🧹 Pre-Filter Results")
         fc1, fc2, fc3, fc4 = st.columns(4)
         fc1.metric("Before Filter", before_filter)
         fc2.metric("Removed (Page Traffic = 0)", removed_pt)
-        fc3.metric(f"Removed (Domain Traffic < {min_domain_traffic:,})", removed_dt)
+        fc3.metric(f"Removed (Traffic < {min_domain_traffic:,})", removed_dt)
         fc4.metric(f"Removed (DR < {min_dr})", removed_dr)
 
         filter_summary(
             f"✅ <b>{after_filter}</b> opportunities passed all filters out of <b>{before_filter}</b> total. &nbsp;·&nbsp; "
-            f"🚫 Page traffic = 0: <b>{removed_pt}</b> removed &nbsp;·&nbsp; "
-            f"🚫 Domain traffic &lt; {min_domain_traffic:,}: <b>{removed_dt}</b> removed &nbsp;·&nbsp; "
-            f"🚫 DR &lt; {min_dr}: <b>{removed_dr}</b> removed"
+            f"🚫 Page traffic = 0: <b>{removed_pt}</b> &nbsp;·&nbsp; "
+            f"🚫 Domain traffic &lt; {min_domain_traffic:,}: <b>{removed_dt}</b> &nbsp;·&nbsp; "
+            f"🚫 DR &lt; {min_dr}: <b>{removed_dr}</b>"
         )
 
         st.markdown("### 🎯 Final Link Opportunities")
